@@ -28,6 +28,7 @@ class PipelineRunSummary(ApiModel):
     fingerprint: str
     params: dict[str, Any]
     incident_ids: list[str] = []
+    agent_runs: list[dict[str, Any]] = []
 
 
 class HealthResponse(ApiModel):

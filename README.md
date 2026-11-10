@@ -106,12 +106,16 @@ sequenceDiagram
 - **Providers** (`LLM_PROVIDER`):
   - `mock`: the default, deterministic and offline; a rule-based investigator, not an LLM.
   - `anthropic`: Claude, default model `claude-opus-5-5`.
+  - `nim`: NVIDIA NIM through its OpenAI-compatible API (`NVIDIA_API_KEY`; hosted
+    `integrate.api.nvidia.com` by default, or a self-hosted NIM via `NIM_BASE_URL`), default model
+    `meta/llama-3.3-70b-instruct`.
   - `openai`.
   - `local`: any OpenAI-compatible endpoint.
   - When a selected provider lacks a key or SDK, the system falls back to the
     mock and reports the reason.
-- **The LLM never executes anything.** It can only request one of nine
-  read-only, incident-scoped tools, with validated arguments.
+- **The LLM never executes anything.** In the RCA it can only request one of nine
+  read-only, incident-scoped tools. As the agent's planner it can only propose a
+  registered agent tool, which then goes through the policy gate.
 - **No hidden reasoning is stored.** Only structured facts, inferences,
   hypotheses, evidence references and recommendations are kept.
 
@@ -164,13 +168,31 @@ stateDiagram-v2
 | `failed_ci` | reproduce failure → CI log → diff last commit → hypothesis → generate revert patch → **apply patch (approval)** → tests + linter → report |
 | `production_anomaly` | metrics → take incident → RCA → deployment registry → **rollback (HIGH_RISK: approval + admin + `AGENT_ALLOW_HIGH_RISK`)** → simulated rollback → verify recovery → resolve → report |
 
+**Planner.** `AGENT_PLANNER=playbook` (default) follows the flows above. `AGENT_PLANNER=llm` lets the
+configured model (Claude or NVIDIA NIM) choose each next step and its arguments from the results so
+far. Each step is validated against the tool registry and argument models, BLOCKED tools are never
+offered, and if the model fails or asks for something invalid the playbook picks that step instead
+(the reason is stored in the run's `planner_fallbacks`).
+
+**Autonomous mode.** With `AGENT_AUTONOMOUS=true` the agent runs without a human:
+- every pipeline run that opens an incident starts a `production_anomaly` run on it;
+- actions that normally wait for an approver are approved and executed by the `autopilot` actor;
+- the policy still applies: HIGH_RISK actions need `AGENT_ALLOW_HIGH_RISK=true` and BLOCKED actions
+  never run;
+- every automatic approval is in the audit log as `agent.action.auto_approved`.
+
+```bash
+LLM_PROVIDER=nim NVIDIA_API_KEY=nvapi-... AGENT_PLANNER=llm AGENT_AUTONOMOUS=true AGENT_ALLOW_HIGH_RISK=true \
+  docker compose up --build
+```
+
 ## 8. Security model
 
 | Control | Implementation |
 |---|---|
 | API authentication | Bearer tokens, stored only as SHA-256 hashes (`AEGIS_API_TOKENS`), compared in constant time; accepted only in the `Authorization` header |
 | RBAC | viewer < operator < approver < admin, enforced per endpoint |
-| Agent permissions | Risk classes READ_ONLY / LOW_RISK / REQUIRES_APPROVAL / HIGH_RISK / BLOCKED. The policy is re-checked at execution, inside the service rather than only in the API. Separation of duties: the approver cannot be the run's initiator. HIGH_RISK actions are off by default and require admin execution. |
+| Agent permissions | Risk classes READ_ONLY / LOW_RISK / REQUIRES_APPROVAL / HIGH_RISK / BLOCKED. The policy is re-checked at execution, inside the service rather than only in the API. Separation of duties: the approver cannot be the run's initiator. HIGH_RISK actions are off by default and require admin execution. Autonomous mode (off by default) replaces the human approver with the `autopilot` actor but keeps the risk policy. |
 | Command sandboxing | Fixed executables (`python -m pytest|pyflakes`, allowlisted git subcommands); argv lists only (`shell=False`, enforced by an AST test); confined working directory; scrubbed environment; timeouts |
 | Input validation | Pydantic bodies with `extra="forbid"`; patterns for ids, metrics and cells; 1 MB body limit (declared or streamed) |
 | Rate limiting | Per-token or per-IP window in Redis, with an in-process fallback |
@@ -200,10 +222,13 @@ generated token hashes and a Postgres password. The raw tokens go to
 |---|---|---|
 | `DATABASE_URL` | SQLite under `data/` (Docker: PostgreSQL) | SQLAlchemy URL |
 | `AEGIS_API_TOKENS` | – | `name:role:sha256` entries (`scripts/hash_token.py`) |
-| `LLM_PROVIDER`, `MODEL_NAME` | `mock` | `mock`, `anthropic`, `openai`, `local` |
-| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `LOCAL_LLM_BASE_URL` | – | provider credentials / endpoint |
+| `LLM_PROVIDER`, `MODEL_NAME` | `mock` | `mock`, `anthropic`, `nim`, `openai`, `local` |
+| `ANTHROPIC_API_KEY`, `NVIDIA_API_KEY`, `OPENAI_API_KEY`, `LOCAL_LLM_BASE_URL` | – | provider credentials / endpoint |
+| `NIM_BASE_URL` | hosted NIM | self-hosted NVIDIA NIM endpoint |
+| `AGENT_PLANNER` | `playbook` | `playbook` or `llm` (the model picks each agent step) |
+| `AGENT_AUTONOMOUS` | `false` | agent starts on new incidents and approves its own actions |
 | `REDIS_URL` | – | rate-limit store (in-process fallback) |
-| `AGENT_ALLOW_HIGH_RISK` | `false` | allow HIGH_RISK agent actions (still approval + admin) |
+| `AGENT_ALLOW_HIGH_RISK` | `false` | allow HIGH_RISK agent actions (approval + admin, or autonomous mode) |
 | `AEGIS_RATE_LIMIT_PER_MINUTE`, `AEGIS_MAX_REQUEST_BYTES` | 120 / 1 MB | hardening limits |
 
 ## 11. Running the demo
@@ -298,13 +323,14 @@ The C library independently flags exactly the four affected cells.
 - **Simulated rollback:** it re-simulates telemetry. `restart_service` is
   not modelled and always fails with an explanation.
 - **Mock AI by default:** the default "AI" is a rule-based mock.
-  - Anthropic, OpenAI and local providers are implemented. Their request
+  - Anthropic, NVIDIA NIM, OpenAI and local providers are implemented. Their request
     shapes are checked against the installed SDKs, but they have **not** been
     exercised against live APIs here (no key).
   - The executive summary is the only LLM-written prose. Ungrounded numbers
     are rejected.
-- **Deterministic agent:** the agent's playbooks are rule-based; the LLM
-  only influences the RCA. Patches are limited to reverting the last commit.
+- **Agent planning:** by default the agent follows rule-based playbooks; the
+  LLM planner is opt-in and has not been run against live APIs here (no key).
+  Patches are limited to reverting the last commit.
 - **Optional features not implemented:** Isolation Forest/DBSCAN, PDF
   reports, OpenTelemetry/Grafana.
 - **Single-process limits:** pipeline runs and agent runs execute

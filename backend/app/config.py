@@ -59,11 +59,15 @@ class Settings:
     model_name: str = ""
     anthropic_api_key: str = field(default="", repr=False)
     openai_api_key: str = field(default="", repr=False)
+    nvidia_api_key: str = field(default="", repr=False)
+    nim_base_url: str = "https://integrate.api.nvidia.com/v1"
     local_llm_base_url: str = ""
     redis_url: str = ""
     rate_limit_per_minute: int = 120
     max_request_bytes: int = 1_000_000
     agent_allow_high_risk: bool = False
+    agent_planner: str = "playbook"
+    agent_autonomous: bool = False
     agent_workspace_root: Path = Path("/tmp/aegis-agent-workspaces")
     log_level: str = "INFO"
 
@@ -83,11 +87,15 @@ class Settings:
             model_name=e.get("MODEL_NAME", ""),
             anthropic_api_key=e.get("ANTHROPIC_API_KEY", ""),
             openai_api_key=e.get("OPENAI_API_KEY", ""),
+            nvidia_api_key=e.get("NVIDIA_API_KEY", ""),
+            nim_base_url=e.get("NIM_BASE_URL", "").strip() or defaults.nim_base_url,
             local_llm_base_url=e.get("LOCAL_LLM_BASE_URL", ""),
             redis_url=e.get("REDIS_URL", ""),
             rate_limit_per_minute=int(e.get("AEGIS_RATE_LIMIT_PER_MINUTE", "120")),
             max_request_bytes=int(e.get("AEGIS_MAX_REQUEST_BYTES", "1000000")),
             agent_allow_high_risk=flag("AGENT_ALLOW_HIGH_RISK"),
+            agent_planner=e.get("AGENT_PLANNER", "playbook").strip().lower() or "playbook",
+            agent_autonomous=flag("AGENT_AUTONOMOUS"),
             agent_workspace_root=Path(e.get("AGENT_WORKSPACE_ROOT", str(defaults.agent_workspace_root))),
             log_level=e.get("LOG_LEVEL", "INFO").upper(),
         )

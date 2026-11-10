@@ -8,6 +8,9 @@ from app.config import Settings
 from app.llm.base import LLMProvider
 from app.llm.mock import MockProvider
 
+# NVIDIA NIM serves an OpenAI-compatible API (hosted at build.nvidia.com or self-hosted).
+NIM_DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
+
 
 @dataclass(frozen=True)
 class ProviderChoice:
@@ -34,6 +37,15 @@ def build_provider(settings: Settings) -> ProviderChoice:
             from app.llm.openai_provider import OpenAIProvider
 
             return ProviderChoice(OpenAIProvider(settings.openai_api_key, settings.model_name),
+                                  requested, None)
+        if requested == "nim":
+            if not settings.nvidia_api_key:
+                return ProviderChoice(MockProvider("NVIDIA_API_KEY not set"), requested,
+                                      "NVIDIA_API_KEY not set; using the deterministic mock provider")
+            from app.llm.openai_provider import OpenAIProvider
+
+            return ProviderChoice(OpenAIProvider(settings.nvidia_api_key, settings.model_name or NIM_DEFAULT_MODEL,
+                                                 base_url=settings.nim_base_url, name="nim", strict_tools=False),
                                   requested, None)
         if requested == "local":
             if not settings.local_llm_base_url:

@@ -12,7 +12,7 @@ before it runs.
 |---|---|---|
 | READ_ONLY | automatic | inspect_repository, inspect_git_diff, run_unit_tests, run_linter, run_tests, run_security_scan, inspect_dependencies, inspect_container, inspect_logs, inspect_metrics |
 | LOW_RISK | automatic | create_incident, request_rca, generate_patch, generate_report, close_incident |
-| REQUIRES_APPROVAL | approver (not the initiator) approves; operator+ executes | apply_patch, modify_dependency, restart_service |
+| REQUIRES_APPROVAL | approver (not the initiator) approves; operator+ executes; automatic with `AGENT_AUTONOMOUS` | apply_patch, modify_dependency, restart_service |
 | HIGH_RISK | off unless `AGENT_ALLOW_HIGH_RISK=true`; then approval + admin execution | rollback_deployment |
 | BLOCKED | never | delete_infrastructure |
 
@@ -35,3 +35,11 @@ subcommands; they use argv lists only, a confined working directory, a scrubbed 
 - The production rollback re-simulates the scenario with the deployment reverted, in a verification run
   that opens no incidents. Recovery means the last 30 minutes are within the detection tolerances of the
   pre-incident baseline, with no open anomalies.
+
+**Planner and autonomous mode.** `AGENT_PLANNER=llm` lets the configured model (Claude via
+`LLM_PROVIDER=anthropic`, or NVIDIA NIM via `LLM_PROVIDER=nim`) choose each step; see
+`backend/app/agents/llm_planner.py`. The playbook is the fallback for any failed or invalid step.
+`AGENT_AUTONOMOUS=true` starts a `production_anomaly` run for each incident a pipeline run opens, and
+approves and executes REQUIRES_APPROVAL actions (and HIGH_RISK ones when `AGENT_ALLOW_HIGH_RISK=true`)
+as the `autopilot` actor. BLOCKED actions still never run. Each automatic approval is audited as
+`agent.action.auto_approved`.

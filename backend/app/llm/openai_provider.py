@@ -1,4 +1,4 @@
-"""OpenAI Chat Completions provider; also serves OpenAI-compatible local endpoints.
+"""OpenAI Chat Completions provider; also serves NVIDIA NIM and OpenAI-compatible local endpoints.
 
 `LLM_PROVIDER=local` uses this class with `LOCAL_LLM_BASE_URL` (e.g. an Ollama or
 vLLM server exposing `/v1/chat/completions`). The `openai` SDK is optional and
@@ -31,11 +31,12 @@ INVALID_ARGUMENTS_KEY = "__invalid_json__"
 
 class OpenAIProvider(LLMProvider):
     def __init__(self, api_key: str, model: str, *, base_url: str | None = None,
-                 name: str = "openai", client: Any = None) -> None:
+                 name: str = "openai", client: Any = None, strict_tools: bool = True) -> None:
         if not model:
             raise LLMConfigurationError(f"MODEL_NAME must be set for LLM_PROVIDER={name}")
         self.name = name
         self.model = model
+        self.strict_tools = strict_tools
         if client is None:
             import openai  # optional dependency; see requirements-llm.txt
 
@@ -61,10 +62,12 @@ class OpenAIProvider(LLMProvider):
                          for r in m.results]
         return wire
 
-    @staticmethod
-    def _tools(tools: list[ToolSpec]) -> list[dict[str, Any]]:
+    def _tools(self, tools: list[ToolSpec]) -> list[dict[str, Any]]:
+        # Some OpenAI-compatible servers (e.g. NVIDIA NIM) do not accept `strict`; arguments
+        # are validated by the caller either way.
+        extra = {"strict": True} if self.strict_tools else {}
         return [{"type": "function", "function": {"name": t.name, "description": t.description,
-                                                  "parameters": t.input_schema, "strict": True}}
+                                                  "parameters": t.input_schema, **extra}}
                 for t in tools]
 
     def _request(self, system: str, messages: list[Message], max_tokens: int,

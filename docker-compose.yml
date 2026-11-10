@@ -1,4 +1,4 @@
-# Aegis-Net local stack: `make env` (once) then `docker compose up --build`.
+# nexus local stack: `make env` (once) then `docker compose up --build`.
 # Ports are bound to 127.0.0.1 only. All data is synthetic.
 name: aegis-net
 
@@ -43,7 +43,11 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       LOCAL_LLM_BASE_URL: ${LOCAL_LLM_BASE_URL:-}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      NIM_BASE_URL: ${NIM_BASE_URL:-}
       AGENT_ALLOW_HIGH_RISK: ${AGENT_ALLOW_HIGH_RISK:-false}
+      AGENT_PLANNER: ${AGENT_PLANNER:-playbook}
+      AGENT_AUTONOMOUS: ${AGENT_AUTONOMOUS:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
       - aegis-data:/data

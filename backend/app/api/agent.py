@@ -60,7 +60,8 @@ def status(request: Request, session: SessionDep, settings: SettingsDep, _: View
             "latest_run": latest.run_id if latest else None, "scenarios": list(SCENARIOS),
             "policy": {"allow_high_risk": settings.agent_allow_high_risk,
                        "tools": {name: tool.risk.value for name, tool in TOOLS.items()}},
-            "llm_provider": request.app.state.llm.provider.name}
+            "llm_provider": request.app.state.llm.provider.name,
+            "planner": settings.agent_planner, "autonomous": settings.agent_autonomous}
 
 
 @router.get("/actions", response_model=list[AgentAction])

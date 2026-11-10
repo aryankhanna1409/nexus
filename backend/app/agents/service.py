@@ -1,11 +1,18 @@
 """DevSecOps agent orchestration: OBSERVE -> ANALYZE -> PLAN -> ACT -> VERIFY -> CLOSE.
 
-The planner is deterministic: it picks the next allowlisted tool and its
-arguments from the results of earlier actions. Every action is persisted with
+The planner picks the next allowlisted tool and its arguments from the results
+of earlier actions. By default it is the deterministic playbook; with
+`AGENT_PLANNER=llm` the configured model (Claude, NVIDIA NIM, ...) proposes each
+step, validated against the tool registry, with the playbook as fallback. Either
+way the model never builds commands: tools do. Every action is persisted with
 its rationale *before* it executes. The policy is evaluated at proposal time and
-re-evaluated at execution time, inside `execute_action`, so no API path can
-bypass it. The LLM participates only through the RCA engine (read-only
-tools); it never selects or parameterises agent tools or commands.
+re-evaluated at execution time, so no API path can bypass it.
+
+With `AGENT_AUTONOMOUS=true` the agent approves and executes the actions that
+policy allows with approval, as the `autopilot` actor, so a run goes from
+detection to report without a human. HIGH_RISK actions still need
+`AGENT_ALLOW_HIGH_RISK=true`, BLOCKED actions never run, and every automatic
+approval is written to the audit log.
 """
 
 from __future__ import annotations
@@ -19,6 +26,7 @@ from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.agents.llm_planner import llm_next_action
 from app.agents.planner import PlannedAction, next_action
 from app.agents.policy import Decision, RiskClass, evaluate, executor_role
 from app.agents.runner import CommandNotAllowed
@@ -36,6 +44,8 @@ from app.security.tokens import Principal
 SCENARIOS = ("vulnerable_dependency", "failed_ci", "production_anomaly")
 PHASES = ("OBSERVE", "ANALYZE", "PLAN", "ACT", "VERIFY", "CLOSE")
 MAX_ACTIONS_PER_RUN = 40
+AUTOPILOT = "autopilot"
+MAX_RECORDED_FALLBACKS = 10
 log = get_logger("agent")
 
 
@@ -151,7 +161,7 @@ def _advance(deps: AgentDeps, run: AgentRun) -> AgentRun:
             run.status, run.state = "failed", "CLOSED"
             run.summary = {**run.summary, "failure": "action limit reached"}
             break
-        planned = next_action(run, history)
+        planned = _plan(deps, run, history)
         if planned is None:
             run.status = "completed"
             run.state = "CLOSED"
@@ -167,6 +177,8 @@ def _advance(deps: AgentDeps, run: AgentRun) -> AgentRun:
         if action.status == "proposed":
             _execute(deps, run, action, f"agent:{run.run_id}", "agent")
             run.summary = _summary_after(run, action)
+        elif action.status == "awaiting_approval" and deps.settings.agent_autonomous:
+            _auto_approve_and_execute(deps, run, action)
         elif action.status == "awaiting_approval":
             run.status = "awaiting_approval"
             run.state = "PLAN"  # the plan is proposed; ACT starts once it is approved and executed
@@ -174,6 +186,40 @@ def _advance(deps: AgentDeps, run: AgentRun) -> AgentRun:
         deps.session.flush()
     deps.session.commit()
     return run
+
+
+def _plan(deps: AgentDeps, run: AgentRun, history: list[AgentActionRecord]) -> PlannedAction | None:
+    if deps.settings.agent_planner != "llm" or deps.llm.provider.name == "mock":
+        run.summary = {**run.summary, "planner": "playbook"}
+        return next_action(run, history)
+    planned, fallback = llm_next_action(run, history, deps.llm.provider, deps.settings.agent_allow_high_risk)
+    summary = {**run.summary, "planner": f"llm:{deps.llm.provider.name}"}
+    if fallback is not None:
+        log.warning("LLM planner fell back to the playbook", extra={"reason": fallback})
+        summary["planner_fallbacks"] = [*summary.get("planner_fallbacks", []), fallback][-MAX_RECORDED_FALLBACKS:]
+    run.summary = summary
+    if planned is not None:  # a playbook fallback can name an earlier phase; never move backwards
+        current = run.state if run.state in PHASES else "OBSERVE"
+        if PHASES.index(planned.phase) < PHASES.index(current):
+            planned = PlannedAction(current, planned.tool, planned.arguments, planned.rationale)
+    return planned
+
+
+def _auto_approve_and_execute(deps: AgentDeps, run: AgentRun, action: AgentActionRecord) -> None:
+    """Autonomous mode: approve and execute an action that policy allows with approval."""
+    if evaluate(RiskClass(action.risk_class), deps.settings.agent_allow_high_risk).decision \
+            is not Decision.NEEDS_APPROVAL:  # re-check, as execute_action does
+        action.status = "blocked"
+        return
+    action.approved_by = AUTOPILOT
+    action.approved_epoch = int(time.time())
+    action.status = "approved"
+    action.result = {**action.result, "approval_comment": "approved automatically (AGENT_AUTONOMOUS=true)"}
+    _audit(deps, AUTOPILOT, AUTOPILOT, "agent.action.auto_approved", action.action_id, tool=action.tool,
+           risk_class=action.risk_class, run_id=run.run_id)
+    run.state = action.phase
+    _execute(deps, run, action, AUTOPILOT, AUTOPILOT)
+    run.summary = {**_summary_after(run, action), "autonomous": True}
 
 
 def _summary_after(run: AgentRun, action: AgentActionRecord) -> dict[str, Any]:
