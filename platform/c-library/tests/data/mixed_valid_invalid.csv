@@ -1,0 +1,5 @@
+timestamp,caller,callee,cell_id,duration,status_code,signal_strength,packet_loss
+2026-03-01T14:00:00Z,+1,+2,CELL-A,10,200,-80,1
+not,a,valid,row
+2026-03-01T14:01:00Z,+1,+3,CELL-A,abc,200,-80,1
+2026-03-01T14:02:00Z,+1,+3,CELL-B,20,200,-80,1

@@ -1,0 +1,26 @@
+[project]
+name = "aegis-net-backend"
+version = "0.1.0"
+description = "Aegis-Net backend: call-log analysis binding and (later) analytics, RCA and agent services"
+requires-python = ">=3.12"
+dependencies = []
+
+# Development tools are pinned in requirements-dev.txt (installed by `make py-venv`).
+
+[tool.setuptools]
+packages = ["call_analyzer"]
+
+[tool.setuptools.package-data]
+call_analyzer = ["py.typed"]
+"app.reporting" = ["templates/*.j2"]
+"app.agents" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["call_analyzer", "app", "../scripts/generate_call_logs.py", "../scripts/generate_network_metrics.py", "../scripts/simulate_incident.py"]

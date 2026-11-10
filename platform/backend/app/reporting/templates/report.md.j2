@@ -1,0 +1,117 @@
+# {{ r.title | md }}
+
+**Incident:** {{ r.incident_id | md }}\
+**Severity:** {{ r.severity | md }} · **Status:** {{ r.status | md }}\
+**Window:** {{ r.window | md }}\
+**Report:** {{ r.report_id | md }} · generated {{ r.generated_at | md }} by {{ r.generated_by | md }}
+
+> {{ r.data_notice | md }}
+
+## Executive Summary
+
+{{ r.executive_summary | md }}
+
+_Narrative source: {{ r.narrative_provider | md }}. All figures below are computed from stored telemetry._
+
+## KPI Analysis
+
+| KPI | Baseline (1 h before) | Incident mean | Worst | Change |
+|---|---|---|---|---|
+{% for k in r.kpi_analysis %}
+| {{ k.metric | md }} ({{ k.unit | md }}) | {{ k.baseline }} | {{ k.incident_mean }} | {{ k.worst }} | {{ k.change_pct if k.change_pct is not none else "n/a" }}% |
+{% endfor %}
+
+## Anomaly Analysis
+
+| Metric | Onset | Baseline | Worst | Severity | Cells |
+|---|---|---|---|---|---|
+{% for a in r.anomaly_analysis %}
+| {{ a.metric | md }} | {{ a.onset | md }} | {{ a.baseline }} | {{ a.worst_value }} | {{ a.severity | md }} | {{ a.cells | join(", ") | md }} |
+{% endfor %}
+
+## Correlation Analysis
+
+Chain consistency: {{ r.correlation_analysis.chain_consistency }}
+
+Symptom onset sequence (temporal order, not proof of causation):
+
+{% for link in r.correlation_analysis.causal_chain %}
+- {{ link["from"] | md }} → {{ link["to"] | md }} (+{{ (link["lag_seconds"] // 60) }} min)
+{% endfor %}
+
+Correlation hypotheses (ranked, not proven):
+{% for h in r.correlation_analysis.hypotheses %}
+- {{ h["cause_type"] | md }} — score {{ h["score"] }}: {{ h["description"] | md }}
+{% endfor %}
+{% if r.correlation_analysis.excluded_candidates %}
+
+Excluded candidates:
+{% for e in r.correlation_analysis.excluded_candidates %}
+- {{ e["description"] | md }} — {{ e["reason"] | md }}
+{% endfor %}
+{% endif %}
+
+## Root Cause
+
+**{{ r.root_cause.statement | md }}**
+
+Confidence: {{ r.root_cause.confidence | pct }} — {{ r.root_cause.status_label | md }}
+
+{% if r.root_cause.facts %}
+Observed facts:
+{% for f in r.root_cause.facts %}
+- {{ f["statement"] | md }} _[{{ f["tool_call_ids"] | join(", ") | md }}]_
+{% endfor %}
+{% endif %}
+{% if r.root_cause.inferences %}
+
+Inferences:
+{% for i in r.root_cause.inferences %}
+- {{ i["statement"] | md }} _[based on {{ i["based_on"] | join(", ") | md }}]_
+{% endfor %}
+{% endif %}
+{% if r.root_cause.alternative_hypotheses %}
+
+Alternative hypotheses:
+{% for h in r.root_cause.alternative_hypotheses %}
+- {{ h["cause_type"] | md }} ({{ h.get("confidence", h.get("score")) }}): {{ h.get("assessment", h.get("description", "")) | md }}
+{% endfor %}
+{% endif %}
+
+## Impact
+
+{{ r.impact.summary | md }}
+
+## Recommendations
+
+{% for a in r.recommendations %}
+{{ a["priority"] }}. {{ a["action"] | md }} — *{{ a["risk_class"] | md }}* — {{ a["rationale"] | md }}
+{% endfor %}
+{% if r.verification_steps %}
+
+Verification steps:
+{% for v in r.verification_steps %}
+- [ ] {{ v | md }}
+{% endfor %}
+{% endif %}
+
+## Confidence
+
+- Root-cause confidence: {{ r.confidence["root_cause_confidence"] | pct }}
+- Correlation confidence: {{ r.confidence["correlation_confidence"] | pct }}
+- Chain consistency: {{ r.confidence["chain_consistency"] }}
+{% for c in r.confidence["caveats"] %}
+- {{ c | md }}
+{% endfor %}
+
+## Timeline
+
+{% for e in r.timeline %}
+- {{ e["timestamp"] | md }} — {{ e["type"] | md }} — {{ e["description"] | md }}
+{% endfor %}
+
+## Evidence References
+
+- Tool calls: {{ r.evidence_references["tool_calls"] | join(", ") | md }}
+- Anomalies: {{ r.evidence_references["anomalies"] | join(", ") | md }}
+- Events: {{ r.evidence_references["events"] | join(", ") | md }}
