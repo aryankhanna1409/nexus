@@ -1,0 +1,6 @@
+[
+  {"id": "DEMO-CVE-2026-0001", "package": "netparse", "affected_below": "1.4.5", "fixed_in": "1.4.5",
+   "severity": "high", "summary": "Crafted length field causes an out-of-bounds read in the TLV decoder (fictional)."},
+  {"id": "DEMO-CVE-2026-0002", "package": "fastjsonx", "affected_below": "1.9.0", "fixed_in": "1.9.0",
+   "severity": "medium", "summary": "Deeply nested input exhausts the stack (fictional)."}
+]

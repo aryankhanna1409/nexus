@@ -1,0 +1,4 @@
+# Fictional packages (never installed). The agent scans these against
+# ../advisories.json, a made-up advisory feed with DEMO-CVE ids.
+netparse==1.4.2
+fastjsonx==2.1.0

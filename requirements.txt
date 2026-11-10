@@ -1,0 +1,3 @@
+# Optional: only needed for the live Claude investigation and agent.
+# Without it (or without ANTHROPIC_API_KEY) the demo runs on its offline fallbacks.
+anthropic>=0.70

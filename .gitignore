@@ -1,0 +1,18 @@
+# build output
+c-library/build/
+out/
+__pycache__/
+*.pyc
+*.o
+*.so
+
+# local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+*.pem
+*.key
+.aegis-tokens
+
+.DS_Store

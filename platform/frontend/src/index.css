@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { @apply bg-noc-bg text-noc-text antialiased; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.panel { @apply rounded-lg border border-noc-line bg-noc-panel p-4; }
+.label { @apply text-xs uppercase tracking-wider text-noc-muted; }
+.btn { @apply rounded px-3 py-1.5 text-sm font-medium disabled:opacity-40; }
+.btn-primary { @apply btn bg-sky-600 text-white hover:bg-sky-500; }
+.btn-danger { @apply btn bg-red-600 text-white hover:bg-red-500; }
+.btn-ghost { @apply btn border border-noc-line text-noc-text hover:bg-noc-line; }
+table.data { @apply w-full text-left text-sm; }
+table.data th { @apply border-b border-noc-line px-2 py-1.5 text-xs uppercase text-noc-muted; }
+table.data td { @apply border-b border-noc-line/60 px-2 py-1.5 align-top; }
