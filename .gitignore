@@ -1,16 +1,27 @@
 # build output
 c-library/build/
-out/
+c-library/build-asan/
+frontend/node_modules/
+frontend/dist/
 __pycache__/
+.pytest_cache/
+.mypy_cache/
 *.pyc
-*.o
-*.so
+*.tsbuildinfo
+
+# generated data and reports (directories are kept with .gitkeep)
+data/**/*
+!data/**/
+!data/**/.gitkeep
+reports/*
+!reports/.gitkeep
 
 # local environments and secrets
 .venv/
 venv/
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 .aegis-tokens
