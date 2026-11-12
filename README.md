@@ -2,11 +2,11 @@
 
 <img src="assets/banner.svg" width="100%" alt="nexus: stop 4 of 5 in the loop, ACT" />
 
-![FastAPI](https://img.shields.io/badge/FastAPI-000000?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-000000?style=flat-square) ![Redis](https://img.shields.io/badge/Redis-000000?style=flat-square) ![React dashboard](https://img.shields.io/badge/React-dashboard-000000?style=flat-square&labelColor=ffffff) ![C11 ASan + UBSan tested](https://img.shields.io/badge/C11-ASan_+_UBSan_tested-000000?style=flat-square&labelColor=ffffff) ![LLM Claude or NVIDIA NIM](https://img.shields.io/badge/LLM-Claude_or_NVIDIA_NIM-000000?style=flat-square&labelColor=ffffff) ![data synthetic](https://img.shields.io/badge/data-synthetic-000000?style=flat-square&labelColor=ffffff)
+![FastAPI](https://img.shields.io/badge/FastAPI-3b2416?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3b2416?style=flat-square) ![Redis](https://img.shields.io/badge/Redis-3b2416?style=flat-square) ![React dashboard](https://img.shields.io/badge/React-dashboard-8a5a22?style=flat-square&labelColor=1d120b) ![C11 ASan + UBSan tested](https://img.shields.io/badge/C11-ASan_+_UBSan_tested-8a5a22?style=flat-square&labelColor=1d120b) ![LLM Claude or NVIDIA NIM](https://img.shields.io/badge/LLM-Claude_or_NVIDIA_NIM-8a5a22?style=flat-square&labelColor=1d120b) ![data synthetic](https://img.shields.io/badge/data-synthetic-8a5a22?style=flat-square&labelColor=1d120b)
 
 </div>
 
-> **Stop 4 of 5 · ACT.** Knowledge becomes action here: an agent investigates an incident, proposes a fix, and only acts inside a policy gate. Previous: [finintel](https://github.com/aryankhanna1409/finintel). Next: [dishdecoded](https://github.com/aryankhanna1409/dishdecoded). See [the whole loop](https://github.com/aryankhanna1409).
+> **Stop 4 of 5 · ACT · the Pour.** Knowledge becomes action here: an agent investigates an incident, proposes a fix, and only acts inside a policy gate. Previous: [finintel](https://github.com/aryankhanna1409/finintel). Next: [dishdecoded](https://github.com/aryankhanna1409/dishdecoded). See [the whole loop](https://github.com/aryankhanna1409).
 
 A network-intelligence and autonomous DevSecOps platform for a simulated telecom network: FastAPI,
 PostgreSQL, Redis and a React dashboard. (Its codename, **Aegis-Net**, is still used for config names
@@ -362,8 +362,8 @@ The C library independently flags exactly the four affected cells.
 
 <div align="center">
 
-<img src="assets/loop.svg" width="100%" alt="nexus is one stop in a loop: move, see, know, act, ship" />
+<img src="assets/loop.svg" width="100%" alt="nexus is one pour in a loop: move, see, know, act, ship" />
 
-<sub>Part of <a href="https://github.com/aryankhanna1409">Aryan Khanna's portfolio</a>: one loop, five stops, from robots to AI systems.</sub>
+<sub>Part of <a href="https://github.com/aryankhanna1409">Aryan Khanna's portfolio</a>: one loop, five pours, from robots to AI systems.</sub>
 
 </div>
