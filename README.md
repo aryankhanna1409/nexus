@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.svg" width="100%" alt="nexus: stop 4 of 5 in the loop, ACT" />
+<picture><source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg" /><img src="assets/banner.svg" width="100%" alt="nexus: stop 4 of 5 in the loop, ACT" /></picture>
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-3b2416?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3b2416?style=flat-square) ![Redis](https://img.shields.io/badge/Redis-3b2416?style=flat-square) ![React dashboard](https://img.shields.io/badge/React-dashboard-8a5a22?style=flat-square&labelColor=1d120b) ![C11 ASan + UBSan tested](https://img.shields.io/badge/C11-ASan_+_UBSan_tested-8a5a22?style=flat-square&labelColor=1d120b) ![LLM Claude or NVIDIA NIM](https://img.shields.io/badge/LLM-Claude_or_NVIDIA_NIM-8a5a22?style=flat-square&labelColor=1d120b) ![data synthetic](https://img.shields.io/badge/data-synthetic-8a5a22?style=flat-square&labelColor=1d120b)
 
@@ -362,7 +362,7 @@ The C library independently flags exactly the four affected cells.
 
 <div align="center">
 
-<img src="assets/loop.svg" width="100%" alt="nexus is one pour in a loop: move, see, know, act, ship" />
+<picture><source media="(prefers-color-scheme: light)" srcset="assets/loop-light.svg" /><img src="assets/loop.svg" width="100%" alt="nexus is one pour in a loop: move, see, know, act, ship" /></picture>
 
 <sub>Part of <a href="https://github.com/aryankhanna1409">Aryan Khanna's portfolio</a>: one loop, five pours, from robots to AI systems.</sub>
 
