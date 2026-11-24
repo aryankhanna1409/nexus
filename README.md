@@ -35,6 +35,8 @@ It covers the project's three goals:
 
 <p align="center"><sub>Real run of <code>make demo</code> (offline, deterministic mock LLM, about 8 seconds end to end). Build output is trimmed and the report path is shortened; everything else is the program's own output.</sub></p>
 
+Project documentation: [docs/Nexus_Project_Documentation.pdf](docs/Nexus_Project_Documentation.pdf) · Dashboard walkthrough video: [docs/media/nexus_demo.mp4](docs/media/nexus_demo.mp4)
+
 ---
 
 ## 1. Project overview
