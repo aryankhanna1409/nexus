@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+!.env.example
+.aegis-tokens
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+backend/.venv
+c-library/build
+c-library/build-asan
+frontend/node_modules
+frontend/dist
+data
+reports

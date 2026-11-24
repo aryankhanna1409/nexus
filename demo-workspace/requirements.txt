@@ -1,0 +1,3 @@
+# Fictional dependencies (never installed); scanned against the DEMO-CVE advisory DB.
+netparse==1.4.2
+fastjsonx==2.1.0
