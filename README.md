@@ -2,7 +2,7 @@
 
 <picture><source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg" /><img src="assets/banner.svg" width="100%" alt="nexus: stop 4 of 5 in the loop, ACT" /></picture>
 
-![FastAPI](https://img.shields.io/badge/FastAPI-3b2416?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3b2416?style=flat-square) ![Redis](https://img.shields.io/badge/Redis-3b2416?style=flat-square) ![React dashboard](https://img.shields.io/badge/React-dashboard-8a5a22?style=flat-square&labelColor=1d120b) ![C11 ASan + UBSan tested](https://img.shields.io/badge/C11-ASan_+_UBSan_tested-8a5a22?style=flat-square&labelColor=1d120b) ![LLM Claude or NVIDIA NIM](https://img.shields.io/badge/LLM-Claude_or_NVIDIA_NIM-8a5a22?style=flat-square&labelColor=1d120b) ![data synthetic](https://img.shields.io/badge/data-synthetic-8a5a22?style=flat-square&labelColor=1d120b)
+![FastAPI](https://img.shields.io/badge/FastAPI-3b2416?style=flat-square) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-3b2416?style=flat-square) ![Redis](https://img.shields.io/badge/Redis-3b2416?style=flat-square) ![React dashboard](https://img.shields.io/badge/React-dashboard-8a5a22?style=flat-square&labelColor=1d120b) ![C11 ASan + UBSan tested](https://img.shields.io/badge/C11-ASan_+_UBSan_tested-8a5a22?style=flat-square&labelColor=1d120b) ![LLM NVIDIA NIM](https://img.shields.io/badge/LLM-NVIDIA_NIM-8a5a22?style=flat-square&labelColor=1d120b) ![data synthetic](https://img.shields.io/badge/data-synthetic-8a5a22?style=flat-square&labelColor=1d120b)
 
 </div>
 
@@ -177,7 +177,7 @@ stateDiagram-v2
 | `production_anomaly` | metrics → take incident → RCA → deployment registry → **rollback (HIGH_RISK: approval + admin + `AGENT_ALLOW_HIGH_RISK`)** → simulated rollback → verify recovery → resolve → report |
 
 **Planner.** `AGENT_PLANNER=playbook` (default) follows the flows above. `AGENT_PLANNER=llm` lets the
-configured model (Claude or NVIDIA NIM) choose each next step and its arguments from the results so
+configured model (NVIDIA NIM, or OpenAI / Anthropic as optional add-ons) choose each next step and its arguments from the results so
 far. Each step is validated against the tool registry and argument models, BLOCKED tools are never
 offered, and if the model fails or asks for something invalid the playbook picks that step instead
 (the reason is stored in the run's `planner_fallbacks`).
