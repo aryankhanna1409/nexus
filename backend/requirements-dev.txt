@@ -1,0 +1,4 @@
+-r requirements.txt
+-r requirements-llm.txt
+mypy==2.4.0
+httpx==0.28.1

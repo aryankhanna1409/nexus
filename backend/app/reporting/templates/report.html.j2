@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ r.incident_id }} — {{ r.title }}</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b1118; --panel:#121b26; --text:#dbe4ee; --muted:#8aa0b5; --line:#22313f;
+          --crit:#ff5d5d; --high:#ff9f43; --med:#f7d046; --low:#5dade2; --ok:#2ecc71; }
+  body { margin:0; padding:24px; background:var(--bg); color:var(--text);
+         font:14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 22px; } h2 { margin: 28px 0 8px; font-size: 16px; color: var(--muted);
+       text-transform: uppercase; letter-spacing: .06em; }
+  .meta, .note { color: var(--muted); } .panel { background: var(--panel); border: 1px solid var(--line);
+       border-radius: 8px; padding: 14px 16px; }
+  table { width: 100%; border-collapse: collapse; } th, td { text-align: left; padding: 6px 8px;
+       border-bottom: 1px solid var(--line); vertical-align: top; } th { color: var(--muted); font-weight: 600; }
+  .sev { display:inline-block; padding: 1px 8px; border-radius: 10px; font-weight: 700; font-size: 12px; }
+  .sev-CRITICAL, .sev-critical { background: var(--crit); color: #000; } .sev-HIGH, .sev-high { background: var(--high); color:#000; }
+  .sev-MEDIUM, .sev-medium { background: var(--med); color:#000; } .sev-LOW, .sev-low { background: var(--low); color:#000; }
+  .cite { color: var(--muted); font-size: 12px; } .tag { color: var(--muted); font-size: 12px; }
+  ul { margin: 6px 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{ r.title }}</h1>
+  <div class="meta">Incident <strong>{{ r.incident_id }}</strong> · <span class="sev sev-{{ r.severity }}">{{ r.severity }}</span>
+    · status {{ r.status }} · {{ r.window }}</div>
+  <div class="meta">Report {{ r.report_id }} · generated {{ r.generated_at }} by {{ r.generated_by }}</div>
+  <p class="note">{{ r.data_notice }}</p>
+
+  <h2>Executive Summary</h2>
+  <div class="panel"><p>{{ r.executive_summary }}</p><p class="tag">Narrative source: {{ r.narrative_provider }}.
+    All figures are computed from stored telemetry.</p></div>
+
+  <h2>KPI Analysis</h2>
+  <table><tr><th>KPI</th><th>Baseline (1 h before)</th><th>Incident mean</th><th>Worst</th><th>Change</th></tr>
+  {% for k in r.kpi_analysis %}
+    <tr><td>{{ k.metric }} ({{ k.unit }})</td><td>{{ k.baseline }}</td><td>{{ k.incident_mean }}</td>
+        <td>{{ k.worst }}</td><td>{{ k.change_pct if k.change_pct is not none else "n/a" }}%</td></tr>
+  {% endfor %}
+  </table>
+
+  <h2>Anomaly Analysis</h2>
+  <table><tr><th>Metric</th><th>Onset</th><th>Baseline</th><th>Worst</th><th>Severity</th><th>Cells</th></tr>
+  {% for a in r.anomaly_analysis %}
+    <tr><td>{{ a.metric }}</td><td>{{ a.onset }}</td><td>{{ a.baseline }}</td><td>{{ a.worst_value }}</td>
+        <td><span class="sev sev-{{ a.severity }}">{{ a.severity }}</span></td><td>{{ a.cells | join(", ") }}</td></tr>
+  {% endfor %}
+  </table>
+
+  <h2>Correlation Analysis</h2>
+  <div class="panel">
+    <p>Chain consistency: {{ r.correlation_analysis.chain_consistency }}</p>
+    <p class="tag">Symptom onset sequence (temporal order, not proof of causation)</p>
+    <ul>{% for link in r.correlation_analysis.causal_chain %}<li>{{ link["from"] }} → {{ link["to"] }}
+      (+{{ link["lag_seconds"] // 60 }} min)</li>{% endfor %}</ul>
+    <p class="tag">Correlation hypotheses (ranked, not proven)</p>
+    <ul>{% for h in r.correlation_analysis.hypotheses %}<li>{{ h["cause_type"] }} — score {{ h["score"] }}:
+      {{ h["description"] }}</li>{% endfor %}</ul>
+    {% if r.correlation_analysis.excluded_candidates %}
+    <p class="tag">Excluded candidates</p>
+    <ul>{% for e in r.correlation_analysis.excluded_candidates %}<li>{{ e["description"] }} — {{ e["reason"] }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+
+  <h2>Root Cause</h2>
+  <div class="panel">
+    <p><strong>{{ r.root_cause.statement }}</strong></p>
+    <p>Confidence {{ r.root_cause.confidence | pct }} — <span class="tag">{{ r.root_cause.status_label }}</span></p>
+    {% if r.root_cause.facts %}<p class="tag">Observed facts</p><ul>
+      {% for f in r.root_cause.facts %}<li>{{ f["statement"] }} <span class="cite">[{{ f["tool_call_ids"] | join(", ") }}]</span></li>{% endfor %}
+    </ul>{% endif %}
+    {% if r.root_cause.inferences %}<p class="tag">Inferences</p><ul>
+      {% for i in r.root_cause.inferences %}<li>{{ i["statement"] }} <span class="cite">[based on {{ i["based_on"] | join(", ") }}]</span></li>{% endfor %}
+    </ul>{% endif %}
+    {% if r.root_cause.alternative_hypotheses %}<p class="tag">Alternative hypotheses</p><ul>
+      {% for h in r.root_cause.alternative_hypotheses %}<li>{{ h["cause_type"] }} ({{ h.get("confidence", h.get("score")) }}):
+        {{ h.get("assessment", h.get("description", "")) }}</li>{% endfor %}
+    </ul>{% endif %}
+  </div>
+
+  <h2>Impact</h2>
+  <div class="panel"><p>{{ r.impact.summary }}</p></div>
+
+  <h2>Recommendations</h2>
+  <ol>{% for a in r.recommendations %}<li>{{ a["action"] }} — <em>{{ a["risk_class"] }}</em> — {{ a["rationale"] }}</li>{% endfor %}</ol>
+  {% if r.verification_steps %}<p class="tag">Verification steps</p>
+  <ul>{% for v in r.verification_steps %}<li>{{ v }}</li>{% endfor %}</ul>{% endif %}
+
+  <h2>Confidence</h2>
+  <ul><li>Root-cause confidence: {{ r.confidence["root_cause_confidence"] | pct }}</li>
+      <li>Correlation confidence: {{ r.confidence["correlation_confidence"] | pct }}</li>
+      <li>Chain consistency: {{ r.confidence["chain_consistency"] }}</li>
+      {% for c in r.confidence["caveats"] %}<li>{{ c }}</li>{% endfor %}</ul>
+
+  <h2>Timeline</h2>
+  <table><tr><th>Time</th><th>Type</th><th>Description</th></tr>
+  {% for e in r.timeline %}<tr><td>{{ e["timestamp"] }}</td><td>{{ e["type"] }}</td><td>{{ e["description"] }}</td></tr>{% endfor %}
+  </table>
+
+  <h2>Evidence References</h2>
+  <p class="cite">Tool calls: {{ r.evidence_references["tool_calls"] | join(", ") }}</p>
+  <p class="cite">Anomalies: {{ r.evidence_references["anomalies"] | join(", ") }}</p>
+  <p class="cite">Events: {{ r.evidence_references["events"] | join(", ") }}</p>
+</main>
+</body>
+</html>

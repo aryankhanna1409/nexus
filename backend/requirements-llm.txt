@@ -1,0 +1,3 @@
+# Optional vendor SDKs for real LLM providers (the offline demo uses the mock provider).
+anthropic==1.15.0
+openai==3.35.1
