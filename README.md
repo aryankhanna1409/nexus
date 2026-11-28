@@ -6,7 +6,7 @@
 
 </div>
 
-> **Stop 4 of 5 · ACT · the Pour.** Knowledge becomes action here: an agent investigates an incident, proposes a fix, and only acts inside a policy gate. Previous: [finintel](https://github.com/aryankhanna1409/finintel). Next: [dishdecoded](https://github.com/aryankhanna1409/dishdecoded). See [the whole loop](https://github.com/aryankhanna1409).
+> **Stop 4 of 5 · ACT.** Knowledge becomes action here: an agent investigates an incident, proposes a fix, and only acts inside a policy gate. Previous: [finintel](https://github.com/aryankhanna1409/finintel). Next: [dishdecoded](https://github.com/aryankhanna1409/dishdecoded). See [the whole loop](https://github.com/aryankhanna1409).
 
 A network-intelligence and autonomous DevSecOps platform for a simulated telecom network: FastAPI,
 PostgreSQL, Redis and a React dashboard. (Its codename, **Aegis-Net**, is still used for config names
@@ -364,8 +364,8 @@ The C library independently flags exactly the four affected cells.
 
 <div align="center">
 
-<picture><source media="(prefers-color-scheme: light)" srcset="assets/loop-light.svg" /><img src="assets/loop.svg" width="100%" alt="nexus is one pour in a loop: move, see, know, act, ship" /></picture>
+<picture><source media="(prefers-color-scheme: light)" srcset="assets/loop-light.svg" /><img src="assets/loop.svg" width="100%" alt="nexus is one stop in a loop: move, see, know, act, ship" /></picture>
 
-<sub>Part of <a href="https://github.com/aryankhanna1409">Aryan Khanna's portfolio</a>: one loop, five pours, from robots to AI systems.</sub>
+<sub>Part of <a href="https://github.com/aryankhanna1409">Aryan Khanna's portfolio</a>: one loop, five stops, from robots to AI systems.</sub>
 
 </div>
