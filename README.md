@@ -9,8 +9,7 @@
 > **Stop 4 of 5 · ACT · the Pour.** Knowledge becomes action here: an agent investigates an incident, proposes a fix, and only acts inside a policy gate. Previous: [finintel](https://github.com/aryankhanna1409/finintel). Next: [dishdecoded](https://github.com/aryankhanna1409/dishdecoded). See [the whole loop](https://github.com/aryankhanna1409).
 
 A network-intelligence and autonomous DevSecOps platform for a simulated telecom network: FastAPI,
-PostgreSQL, Redis and a React dashboard. (Its codename, **Aegis-Net**, is still used for config names
-such as `AEGIS_API_TOKENS`.) It audits every AI decision and agent action, and it:
+PostgreSQL, Redis and a React dashboard. It audits every AI decision and agent action, and it:
 - analyses telecom call logs with a C library;
 - detects anomalies in network KPIs;
 - correlates them with deployment, configuration and security events;
